@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Exam {
+  id           String         @id @map("_id")
+  duration     String?
+  media_type   String
+  media_value  String
+  subject_id   String
+  title        String
+  year         String
+  exam_content exam_content[]
+  subject      Subject        @relation(fields: [subject_id], references: [id])
+
+  @@index([subject_id])
+}
+
+model exam_content {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  examId     String   @map("exam_id")
+  examType   String   @map("exam_type")
+  examLink   String   @map("exam_link")
+  created_at DateTime @db.Date
+  updated_at DateTime @db.Date
+  exam       Exam     @relation(fields: [examId], references: [id])
+
+  @@index([examId])
+}
+
+model Lesson_Content {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  lesson_id   String
+  lesson_type String
+  lesson_link String
+  created_at  DateTime @db.Date
+  updated_at  DateTime @db.Date
+  lesson      Lessons  @relation(fields: [lesson_id], references: [id])
+
+  @@index([lesson_id])
+}
+
+model Lessons {
+  id             String           @id @map("_id")
+  duration       String
+  media_type     String
+  media_value    String
+  subject_id     String
+  title          String
+  lesson_content Lesson_Content[]
+  subject        Subject          @relation(fields: [subject_id], references: [id])
+
+  @@index([subject_id])
+}
+
+model OTP {
+  id         String       @id @map("_id")
+  created_at DateTime     @db.Date
+  isValid    String
+  otp        String
+  updated_at DateTime     @db.Date
+  user_id    String
+  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id])
+}
+
+model Receipts {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  trans_id   String
+  amount     String
+  period     String
+  user_id    String
+  created_at DateTime     @db.Date
+  updated_at DateTime     @db.Date
+  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id])
+}
+
+model Sessions {
+  id         String   @id @map("_id")
+  created_at DateTime @db.Date
+  device_id  String
+  is_valid   String
+  updated_at DateTime @db.Date
+  user_name  String
+}
+
+model Subject {
+  id                 String          @id @map("_id")
+  exam_description   String
+  exam_title         String
+  lesson_description String
+  lesson_title       String
+  name               String
+  pictureURL         String
+  exams              Exam[]
+  lessons            Lessons[]
+  subject_topics     Subject_Topic[]
+}
+
+model Subject_Topic {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  subject String
+  title   String
+  Subject Subject @relation(fields: [subject], references: [id])
+
+  @@index([subject])
+}
+
+model Subscription_Details {
+  id            String          @id @map("_id")
+  duration      String
+  name          String
+  price         String
+  subscriptions Subscriptions[]
+}
+
+model Subscriptions {
+  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  user_id           String
+  trans_id          String
+  sub_details_id    String
+  created_at        DateTime             @db.Date
+  updated_at        DateTime             @db.Date
+  amount            Float                @default(0)
+  subscription_type String               @default("monthly")
+  commission        Float                @default(0)
+  user              User_Details         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  details           Subscription_Details @relation(fields: [sub_details_id], references: [id])
+
+  @@index([user_id, sub_details_id])
+}
+
+model User_Details {
+  id               String          @id @map("_id")
+  created_at       DateTime        @db.Date
+  device_id        String
+  msisdn           String
+  password         String
+  updated_at       DateTime        @db.Date
+  user_name        String
+  user_role        String
+  user_status      String
+  referral_code    String?
+  sales_manager_id String?
+  role             User_Role       @relation(fields: [user_role], references: [id])
+  status           User_Status     @relation(fields: [user_status], references: [id])
+  otps             OTP[]
+  receipts         Receipts[]
+  subscriptions    Subscriptions[]
+  managed_by       User_Details?   @relation("SalesManagerTeachers", fields: [sales_manager_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers         User_Details[]  @relation("SalesManagerTeachers")
+
+  @@index([user_role, user_status, sales_manager_id])
+}
+
+model User_Role {
+  id    String         @id @map("_id")
+  name  String
+  users User_Details[]
+}
+
+model User_Status {
+  id    String         @id @map("_id")
+  name  String
+  users User_Details[]
+}
+
+model Deletion_Requests {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  msisdn       String
+  user_name    String?
+  requested_at DateTime  @default(now()) @db.Date
+  status       String    @default("pending") // pending, approved, rejected, processed
+  processed_at DateTime? @db.Date
+  notes        String?
+
+  @@index([msisdn])
+  @@index([status])
+  @@index([requested_at])
+}

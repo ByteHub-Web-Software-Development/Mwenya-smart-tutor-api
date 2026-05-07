@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateSubscriptionDto } from './dto/subscription.dto';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 @Injectable()
 export class SubscriptionService {

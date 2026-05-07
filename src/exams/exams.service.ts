@@ -1,11 +1,15 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddExamDto } from './dto/add-exam.dto';
 import { AddExamContentDto } from './dto/add-exam-content.dto';
 import { UpdateExamFieldDto } from './dto/update-exam-field.dto';
-import { randomUUID } from 'crypto';
+import { customAlphabet } from 'nanoid/non-secure';
+import { createId } from '@paralleldrive/cuid2';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { UpdateFullExamDto } from './dto/update-full-exam.dto';
+
+
+const cuid2 = () => createId();
 
 @Injectable()
 export class ExamsService {
@@ -16,7 +20,7 @@ export class ExamsService {
     const subject = await this.prisma.subject.findUnique({ where: { id: exam.subject } });
     if (!subject) throw new NotFoundException(`Subject ${exam.subject} not found`);
 
-    const examId = randomUUID();
+    const examId = cuid2();
     const created = await this.prisma.exam.create({
       data: {
         id: examId,
@@ -35,11 +39,14 @@ export class ExamsService {
   async getExam(id: string) {
     const exam = await this.prisma.exam.findUnique({
       where: { id },
-      include: { exam_content: true, subject: true },
+      include: { exam_content: true },
     });
+
     if (!exam) throw new NotFoundException(`Exam ${id} not found`);
+
     return { statusCode: 200, message: { exam } };
   }
+
 
   async getAllExams(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
@@ -73,13 +80,20 @@ export class ExamsService {
   }
 
   async getExamContent(examId: string) {
+    // Validate parent exam exists
+    const exam = await this.prisma.exam.findUnique({ where: { id: examId } });
+    if (!exam) throw new NotFoundException(`Exam ${examId} not found`);
+
     const content = await this.prisma.exam_content.findMany({
       where: { examId },
       orderBy: { created_at: 'desc' },
     });
+
     if (!content.length) throw new NotFoundException(`No content found for exam ${examId}`);
+
     return { statusCode: 200, message: { content } };
   }
+
 
   async getAllExamContent(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
@@ -98,7 +112,9 @@ export class ExamsService {
       where: { subject_id: subjectId },
       include: { exam_content: true },
     });
-    return { statusCode: 200, message: { exams } };
+
+    return { statusCode: 200, message: { exams, subject: subject } };
+
   }
 
   async deleteExam(id: string) {

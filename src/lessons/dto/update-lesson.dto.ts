@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateLessonFieldDto {
+export class UpdateLessonDto {
+  @ApiProperty({ example: 'id', description: 'Condition value (lesson ID)' })
+  @IsString()
+  @IsNotEmpty()
+  conditionValue!: string;
 
-
-  // Deprecated: use UpdateLessonDto from './update-lesson.dto'
   @ApiProperty({ example: 'title', description: 'Column to update' })
-
   @IsString()
   @IsNotEmpty()
   column!: string;
@@ -16,14 +17,9 @@ export class UpdateLessonFieldDto {
   @IsNotEmpty()
   updateValue!: string;
 
-  @ApiProperty({ example: 'id', description: 'Condition column' })
+  @ApiProperty({ example: 'condition', description: 'Condition column' })
   @IsString()
   @IsNotEmpty()
   condition!: string;
-
-  @ApiProperty({ example: 'lesson_id_abc123', description: 'Condition value (lesson ID)' })
-  @IsString()
-  @IsNotEmpty()
-  conditionValue!: string;
 }
 

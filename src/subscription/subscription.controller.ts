@@ -11,7 +11,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SubscriptionService } from './subscription.service';
-import { CreateSubscriptionDto } from './dto/subscription.dto';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 @ApiTags('Subscription')
 @ApiBearerAuth()

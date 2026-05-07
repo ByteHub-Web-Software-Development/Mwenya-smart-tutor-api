@@ -5,17 +5,17 @@ export class CreateSubscriptionDto {
   @ApiProperty({ example: 'user_id_abc123', description: 'User ID' })
   @IsString()
   @IsNotEmpty()
-  user_id: string;
+  user_id!: string;
 
   @ApiProperty({ example: 'trans_abc123', description: 'Payment transaction ID' })
   @IsString()
   @IsNotEmpty()
-  trans_id: string;
+  trans_id!: string;
 
   @ApiProperty({ example: 'sub_details_id_abc', description: 'Subscription plan ID' })
   @IsString()
   @IsNotEmpty()
-  sub_details_id: string;
+  sub_details_id!: string;
 
   @ApiProperty({ example: 'monthly', description: 'Subscription type', enum: ['monthly', 'termly', 'yearly'] })
   @IsString()

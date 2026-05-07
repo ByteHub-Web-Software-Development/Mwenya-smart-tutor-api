@@ -9,7 +9,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { LessonsService } from './lessons.service';
-import { AddLessonDto, UpdateLessonFieldDto, UpdateFullLessonDto } from './dto/lesson.dto';
+import { AddLessonDto } from './dto/add-lesson.dto';
+import { UpdateLessonDto } from './dto/update-lesson.dto';
+import { UpdateFullLessonDto } from './dto/update-full-lesson.dto';
 
 @ApiTags('Lessons')
 @ApiBearerAuth()
@@ -74,9 +76,10 @@ export class LessonsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Partial update of a lesson field', description: 'Updates a single field on a lesson.' })
   @ApiParam({ name: 'id', description: 'Lesson ID' })
-  @ApiBody({ type: UpdateLessonFieldDto })
+  @ApiBody({ type: UpdateLessonDto })
   @ApiResponse({ status: 200, description: 'Lesson field updated.' })
-  async updateLesson(@Param('id') id: string, @Body() updateData: UpdateLessonFieldDto) {
+  async updateLesson(@Param('id') id: string, @Body() updateData: UpdateLessonDto) {
     return this.lessonsService.updateLesson({ ...updateData, conditionValue: id });
   }
 }
+

@@ -27,6 +27,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.4.0",
+    "@paralleldrive/cuid2": "^3.3.0",
     "@scalar/nestjs-api-reference": "^1.1.8",
     "@types/joi": "^17.2.2",
     "axios": "^1.15.2",

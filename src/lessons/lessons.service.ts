@@ -1,6 +1,8 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AddLessonDto, UpdateLessonFieldDto, UpdateFullLessonDto } from './dto/lesson.dto';
+import { AddLessonDto } from './dto/add-lesson.dto';
+import { UpdateFullLessonDto } from './dto/update-full-lesson.dto';
+import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -38,6 +40,7 @@ export class LessonsService {
     const created = await this.prisma.lessons.create({
       data: { id: randomUUID(), ...lesson },
     });
+
     return { statusCode: 201, message: { description: 'Lesson added successfully', lesson: created } };
   }
 
@@ -49,6 +52,7 @@ export class LessonsService {
       where: { subject_id: subjectId },
       include: { lesson_content: true },
     });
+
     return { statusCode: 200, message: { lessons } };
   }
 
@@ -60,10 +64,11 @@ export class LessonsService {
       this.prisma.lesson_Content.deleteMany({ where: { lesson_id: id } }),
       this.prisma.lessons.delete({ where: { id } }),
     ]);
+
     return { statusCode: 200, message: { description: 'Lesson deleted successfully' } };
   }
 
-  async updateLesson(updateData: UpdateLessonFieldDto & { conditionValue: string }) {
+  async updateLesson(updateData: UpdateLessonDto & { conditionValue: string }) {
     const lesson = await this.prisma.lessons.findUnique({ where: { id: updateData.conditionValue } });
     if (!lesson) throw new NotFoundException(`Lesson ${updateData.conditionValue} not found`);
 
@@ -77,6 +82,7 @@ export class LessonsService {
       where: { id: updateData.conditionValue },
       data: { [updateData.column]: updateData.updateValue },
     });
+
     return { statusCode: 200, message: { description: 'Lesson updated successfully', lesson: updated } };
   }
 
@@ -84,11 +90,15 @@ export class LessonsService {
     const lesson = await this.prisma.lessons.findUnique({ where: { id: updateData.conditionValue } });
     if (!lesson) throw new NotFoundException(`Lesson ${updateData.conditionValue} not found`);
 
+    // Remove unused condition fields
     const { conditionValue, condition: _condition, ...data } = updateData;
+
     const updated = await this.prisma.lessons.update({
       where: { id: conditionValue },
       data,
     });
+
     return { statusCode: 200, message: { description: 'Lesson updated successfully', lesson: updated } };
   }
 }
+

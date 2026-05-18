@@ -396,7 +396,7 @@ Currently `PaymentController` and `PaymentService` are empty stubs.
 ### STORY 9.1 — Chat Module Review & Hardening *(Day 9)*
 **Points:** 3
 
-- [ ] Review `ChatService.chat()` implementation — confirm AI provider integration (Gemini/OpenAI)
+- [ ] Review `ChatService.chat()` implementation — confirm AI provider integration (Gemini)
 - [ ] Add rate-limit config to `ThrottlerGuard` via env vars `THROTTLE_TTL` and `THROTTLE_LIMIT`
 - [ ] Validate `ChatRequest` DTO fields with `class-validator`
 - [ ] Return typed `ChatResponse` with proper error states if AI provider is unavailable
@@ -483,7 +483,7 @@ This is a QA/audit task — confirm every controller has full Scalar-compatible 
   - `Stats — Admin` — Admin-level analytics and reporting
   - `Stats — Sales Manager` — Sales manager performance stats
   - `Stats — Teacher` — Teacher referral and student stats
-  - `Chat` — AI chatbot integration
+- `Chat` — AI chatbot integration (Gemini)
 
 ---
 
@@ -536,7 +536,7 @@ This is a QA/audit task — confirm every controller has full Scalar-compatible 
 **Points:** 3
 
 - [ ] Create `.github/workflows/ci.yml`
-- [ ] Steps: checkout → install → lint → build → test
+- [ ] Steps: checkout → install → security audit → lint → build → test
 - [ ] Run on `push` to `main` and `pull_request` to `main`
 
 ---

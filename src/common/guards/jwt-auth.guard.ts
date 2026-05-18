@@ -1,21 +1,20 @@
 import {
-  CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport';
+import { AuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
-export class JwtAuthGuard extends PassportStrategy(Strategy, 'jwt') implements CanActivate {
+export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(private readonly reflector: Reflector) {
     super();
   }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  async canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -25,8 +24,11 @@ export class JwtAuthGuard extends PassportStrategy(Strategy, 'jwt') implements C
       return true;
     }
 
-    // Passport strategy handles validation + req.user population
-    // Throws Unauthorized if no/invalid token
-    return true;
+    const result = super.canActivate(context);
+    if (result instanceof Observable) {
+      return firstValueFrom(result);
+    }
+    
+    return result as Promise<boolean> | boolean;
   }
 }

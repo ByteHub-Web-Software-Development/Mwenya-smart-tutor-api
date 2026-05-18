@@ -14,15 +14,10 @@ export class ChatService {
   }
 
   async chat(chatRequest: ChatRequest): Promise<ChatResponse> {
-    const openAiKey = this.configService.get<string>('OPENAI_KEY');
-    if (!openAiKey) {
+    const geminiApiKey = this.configService.get<string>('GEMINI_API_KEY');
+    if (!geminiApiKey) {
       throw new InternalServerErrorException('Chat service is not configured.');
     }
-
-    const headers = {
-      Authorization: `Bearer ${openAiKey}`,
-      'Content-Type': 'application/json',
-    };
 
     const messages = (chatRequest.messages || []).map((message) => ({
       role: message.role,
@@ -62,7 +57,7 @@ export class ChatService {
         {
           timeout: timeoutMs,
           params: {
-            key: openAiKey,
+            key: geminiApiKey,
           },
         },
       );
@@ -87,4 +82,3 @@ export class ChatService {
     }
   }
 }
-

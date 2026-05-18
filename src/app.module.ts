@@ -37,7 +37,7 @@ import { RolesGuard } from './common/guards/roles.guard';
       isGlobal: true,
       validationSchema: configSchema,
       validationOptions,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
       cache: true,
       load: [appConfig],
     }),

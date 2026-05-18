@@ -11,8 +11,8 @@ import {
 import { ExamsService } from './exams.service';
 import { AddExamDto } from './dto/add-exam.dto';
 import { AddExamContentDto } from './dto/add-exam-content.dto';
-import { UpdateExamFieldDto } from './dto/update-exam-field.dto';
 import { UpdateFullExamDto } from './dto/update-full-exam.dto';
+import { PatchExamDto } from './dto/patch-exam.dto';
 
 @ApiTags('Exams')
 @ApiBearerAuth()
@@ -66,13 +66,13 @@ export class ExamsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Partial or full update of an exam', description: 'Updates specified fields of an existing exam (PATCH semantics).' })
+  @ApiOperation({ summary: 'Partial update of an exam', description: 'Updates only the fields provided in the request body.' })
   @ApiParam({ name: 'id', description: 'Exam ID to update' })
-  @ApiBody({ type: UpdateFullExamDto })
+  @ApiBody({ type: PatchExamDto })
   @ApiResponse({ status: 200, description: 'Exam updated.' })
   @ApiResponse({ status: 404, description: 'Exam not found.' })
-  async updateFullExam(@Param('id') id: string, @Body() updateData: UpdateFullExamDto) {
-    return this.examsService.updateFullExam({ ...updateData, conditionValue: id });
+  async patchExam(@Param('id') id: string, @Body() updateData: PatchExamDto) {
+    return this.examsService.patchExam(id, updateData);
   }
 
   // Exam Content endpoints

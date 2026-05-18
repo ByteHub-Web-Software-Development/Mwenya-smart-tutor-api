@@ -1,11 +1,10 @@
-# Smart Tutor API - Login Testing Task
+# TODO (BlackboxAI)
 
-## Plan Steps:
-- [x] Understand current validation (@IsMobilePhone strict)
-- [x] Create TODO after plan approval
-- [x] Edit src/auth/dto/login.dto.ts to accept 260100000000  
-- [x] Test endpoint with user payload
-- [x] Verify hot reload works (minor TS error fixed)\n- [ ] Fix DB connection & seed test user\n- [ ] Complete task
+- [ ] Fix failing unit test: `src/chat/chat.service.spec.ts`
+  - Add ConfigModule (or provide ConfigService mock) to TestingModule.
 
-**Status:** Plan approved. Editing validation...
+- [ ] Fix failing unit test: `src/chat/chat.controller.spec.ts`
+  - Provide Throttler module/options (import `ThrottlerModule.forRoot()` with test config) so `ThrottlerGuard` DI works.
+
+- [ ] Re-run `npm test` to ensure all suites pass.
 

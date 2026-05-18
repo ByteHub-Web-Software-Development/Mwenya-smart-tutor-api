@@ -7,7 +7,7 @@ export interface EnvConfig {
   PORT: number;
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
-  OPENAI_KEY?: string;
+  GEMINI_API_KEY?: string;
   DATABASE_URL?: string;
   THROTTLE_TTL: number;
   THROTTLE_LIMIT: number;
@@ -30,11 +30,12 @@ export const configSchema = Joi.object({
   DATABASE_URL: Joi.string().required().description('MongoDB connection string'),
 
   // External services (optional)
-  OPENAI_KEY: Joi.string().optional().description('OpenAI API key for AI chat'),
+  GEMINI_API_KEY: Joi.string().required().description('Gemini API key for AI chat'),
+  AI_CHAT_TIMEOUT_MS: Joi.number().default(15000),
 
   // Environment
   NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test')
+    .valid('development', 'production', 'test', 'provision')
     .default('development')
     .description('Node environment'),
 })

@@ -1,6 +1,6 @@
 # SmartTutor API
 
-The backend API for the **SmartTutorZM** mobile and web applications — built with NestJS, Prisma, and MongoDB.
+SmartTutor API serves as the centralized backend engine for the **SmartTutorZM** educational ecosystem. Engineered for scalability and performance using **NestJS**, **Prisma**, and **MongoDB**, the API facilitates secure user authentication, dynamic curriculum distribution (including lessons and exams), automated subscription billing, integrated payment gateways, AI-enhanced tutoring experiences, and comprehensive data analytics.
 
 ---
 
@@ -13,16 +13,17 @@ The backend API for the **SmartTutorZM** mobile and web applications — built w
 | Authentication | JWT (via `@nestjs/jwt`) |
 | Validation | `class-validator` + `class-transformer` |
 | Documentation | Scalar API Reference (`@scalar/nestjs-api-reference`) |
-| AI Chat | DeepSeek API (via `axios`) |
+| AI Chat | Gemini API (via `axios`) |
 | Rate Limiting | `@nestjs/throttler` |
 
 ---
 
 ## 🔧 Prerequisites
 
-- Node.js ≥ 20
-- npm ≥ 10
-- Access to a MongoDB Atlas cluster (or local MongoDB)
+* **Node.js Runtime**: Version 20.x or newer.
+* **Package Management**: npm version 10.x or higher.
+* **Database Layer**: A MongoDB cluster (Atlas or local) with a valid connection string.
+* **Environment Configuration**: A properly configured `.env` file (refer to the Environment Variables section).
 
 ---
 
@@ -37,12 +38,14 @@ cp .env.example .env
 | Variable | Required | Description |
 |---|---|---|
 | `PORT` | No | Server port (default: `5180`) |
-| `DATABASE_URL` | **Yes** | MongoDB connection string |
-| `JWT_SECRET` | **Yes** | Secret for signing JWT tokens (min 32 chars) |
-| `JWT_EXPIRES_IN` | No | Token expiry (default: `7d`) |
-| `THROTTLE_TTL` | No | Rate limit window in ms (default: `60000`) |
-| `THROTTLE_LIMIT` | No | Max requests per window (default: `20`) |
-| `OPENAI_KEY` | **Yes** | DeepSeek API key for the AI chatbot |
+| `DATABASE_URL` | **Yes** | MongoDB connection string. Example: `mongodb+srv://user:pass@cluster.mongodb.net/smarttutor?retryWrites=true&w=majority` |
+| `JWT_SECRET` | **Yes** | Secret key for signing JSON Web Tokens. Should be a strong, random string (minimum 32 characters recommended). |
+| `JWT_EXPIRES_IN` | No | Duration after which JWT tokens expire. Can be a string like '7d', '24h', or a number in seconds. (default: `7d`) |
+| `THROTTLE_TTL` | No | Time-to-live (TTL) for rate limit records in milliseconds. Defines the window for rate limiting. (default: `60000` ms) |
+| `THROTTLE_LIMIT` | No | Maximum number of requests allowed within the `THROTTLE_TTL` window. (default: `20` requests) |
+| `AI_CHAT_TIMEOUT_MS` | No | Timeout for AI provider requests in milliseconds. (default: `15000` ms) |
+| `GEMINI_API_KEY` | **Yes** | API key for the Gemini AI chatbot service. |
+
 
 ---
 
@@ -146,7 +149,7 @@ npm run test:e2e
 | Subscription | `/subscription` | Subscription plans and user subscriptions |
 | Payment | `/payment` | Payment initiation and receipts |
 | Stats | `/stats` | Analytics — admin, sales manager, teacher views |
-| Chat | `/chat` | AI tutoring chatbot (DeepSeek) |
+| Chat | `/chat` | AI tutoring chatbot (Gemini) |
 
 ---
 

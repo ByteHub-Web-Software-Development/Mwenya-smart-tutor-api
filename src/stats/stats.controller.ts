@@ -9,7 +9,10 @@ import {
 import { StatsService } from './stats.service';
 import { StatsDto } from './dto/stats.dto';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Query } from '@nestjs/common';
+import { DateRangeDto } from './dto/date-range.dto';
 
+@ApiTags('Stats')
 @ApiBearerAuth()
 @Controller('stats')
 export class StatsController {
@@ -26,25 +29,28 @@ export class StatsController {
   }
 
   @ApiTags('Stats')
-  @Get('getExam/:id')
+  @Get('stats-exam/:id')
+
   @ApiParam({ name: 'id', description: 'Exam ID', type: StatsDto })
-  @ApiOperation({ summary: 'Get exam stats by ID', description: 'Returns exam details for stats display.' })
+  @ApiOperation({ summary: '[Stats] Get exam by ID (stats view)', description: 'Returns exam details for stats display.' })
   @ApiResponse({ status: 200, description: 'Exam details.' })
   async getExam(@Param('id') id: string) {
     return this.statsService.getExam(id);
   }
 
   @ApiTags('Stats')
-  @Get('getAllExam')
-  @ApiOperation({ summary: 'Get all exams (stats view)', description: 'Returns all exams for stats reporting.' })
+  @Get('stats-all-exams')
+
+  @ApiOperation({ summary: '[Stats] Get all exams (stats view)', description: 'Returns all exams for stats reporting.' })
   @ApiResponse({ status: 200, description: 'All exams.' })
   async getAllExams() {
     return this.statsService.getAllExams();
   }
 
   @ApiTags('Stats')
-  @Get('getExamContent/:id')
-  @ApiOperation({ summary: 'Get exam content by exam ID', description: 'Returns all content records for the given exam.' })
+  @Get('stats-exam-content/:id')
+
+  @ApiOperation({ summary: '[Stats] Get exam content by exam ID', description: 'Returns all content records for the given exam.' })
   @ApiParam({ name: 'id', description: 'Exam ID', type: StatsDto })
   @ApiResponse({ status: 200, description: 'Exam content records.' })
   async getExamContent(@Param('id') id: string) {
@@ -52,32 +58,36 @@ export class StatsController {
   }
 
   @ApiTags('Stats')
-  @Get('getAllExamContent')
-  @ApiOperation({ summary: 'Get all exam content (stats view)', description: 'Returns all exam content records.' })
+  @Get('stats-all-exam-content')
+
+  @ApiOperation({ summary: '[Stats] Get all exam content (stats view)', description: 'Returns all exam content records.' })
   @ApiResponse({ status: 200, description: 'All exam content.' })
   async getAllExamContent() {
     return this.statsService.getAllExamContent();
   }
 
   @ApiTags('Stats')
-  @Get('getExamBySubject/:id')
-  @ApiOperation({ summary: 'Get exams by subject (stats view)', description: 'Returns all exams grouped under a subject.' })
+  @Get('stats-exam-by-subject/:id')
+  @ApiOperation({ summary: '[Stats] Get exams by subject (stats view)', description: 'Returns all exams grouped under a subject.' })
   @ApiParam({ name: 'id', description: 'Subject ID', type: StatsDto })
   @ApiResponse({ status: 200, description: 'Exams for subject.' })
   async getExamBySubject(@Param('id') id: string) {
     return this.statsService.getExamBySubject(id);
   }
 
+
   // ─── Admin Stats ──────────────────────────────────────────────────────────
 
-  @ApiTags('Stats - Admin')
+@ApiTags('Stats - Admin')
   @Roles('4')
   @Get('admin/user-data')
-  @ApiOperation({ summary: '[ADMIN] Get all user data', description: 'Returns full user records with subscription details. Requires admin role.' })
-  @ApiResponse({ status: 200, description: 'All user data.' })
-  @ApiResponse({ status: 403, description: 'Forbidden — admin role required.' })
-  async getUserData() {
-    return this.statsService.getUserData();
+  @ApiOperation({ 
+    summary: '[ADMIN] Get all user data', 
+    description: 'Returns full user records with optional date range filtering.' 
+  })
+  @ApiResponse({ status: 200, description: 'Filtered user data.' })
+  async getUserData(@Query() filters: DateRangeDto) {
+    return this.statsService.getUserData(filters);
   }
 
   @ApiTags('Stats - Admin')
@@ -96,7 +106,7 @@ export class StatsController {
   @ApiOperation({ summary: '[ADMIN] Get weekly new app users', description: 'Returns users registered in the last 7 days.' })
   @ApiResponse({ status: 200, description: 'Weekly new users.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getWeeklyAppUsers() {
+ async getWeeklyAppUsers() {
     return this.statsService.getWeeklyAppUsers();
   }
 

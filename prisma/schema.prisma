@@ -7,8 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── CONTENT MODELS ─────────────────────────────────────────────────────────
+
 model Exam {
-  id           String         @id @map("_id")
+  id           String         @id @default(cuid()) @map("_id") // Added cuid()
   duration     String?
   media_type   String
   media_value  String
@@ -46,7 +48,7 @@ model Lesson_Content {
 }
 
 model Lessons {
-  id             String           @id @map("_id")
+  id             String           @id @default(cuid()) @map("_id") // Added cuid()
   duration       String
   media_type     String
   media_value    String
@@ -58,42 +60,8 @@ model Lessons {
   @@index([subject_id])
 }
 
-model OTP {
-  id         String       @id @map("_id")
-  created_at DateTime     @db.Date
-  isValid    String
-  otp        String
-  updated_at DateTime     @db.Date
-  user_id    String
-  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([user_id])
-}
-
-model Receipts {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  trans_id   String
-  amount     String
-  period     String
-  user_id    String
-  created_at DateTime     @db.Date
-  updated_at DateTime     @db.Date
-  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([user_id])
-}
-
-model Sessions {
-  id         String   @id @map("_id")
-  created_at DateTime @db.Date
-  device_id  String
-  is_valid   String
-  updated_at DateTime @db.Date
-  user_name  String
-}
-
 model Subject {
-  id                 String          @id @map("_id")
+  id                 String          @id @default(cuid()) @map("_id") // Added cuid()
   exam_description   String
   exam_title         String
   lesson_description String
@@ -114,8 +82,61 @@ model Subject_Topic {
   @@index([subject])
 }
 
+// ─── USER & AUTH MODELS ─────────────────────────────────────────────────────
+
+model User_Details {
+  id               String         @id @default(cuid()) @map("_id") // Added cuid()
+  created_at       DateTime       @db.Date
+  device_id        String
+  msisdn           String
+  password         String
+  updated_at       DateTime       @db.Date
+  user_name        String
+  user_role        String
+  user_status      String
+  referral_code    String?        @unique 
+  sales_manager_id String?
+  role             User_Role      @relation(fields: [user_role], references: [id])
+  status           User_Status    @relation(fields: [user_status], references: [id])
+  otps             OTP[]
+  receipts         Receipts[]
+  subscriptions    Subscriptions[]
+  
+  managed_by       User_Details?  @relation("SalesManagerTeachers", fields: [sales_manager_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers         User_Details[] @relation("SalesManagerTeachers")
+
+  @@index([user_role, user_status, sales_manager_id])
+  @@index([created_at]) 
+}
+
+model User_Role {
+  id    String         @id @map("_id") // Roles usually have fixed IDs (1, 2, 3), kept manual
+  name  String
+  users User_Details[]
+}
+
+model User_Status {
+  id    String         @id @map("_id") // Status usually has fixed IDs (0, 1), kept manual
+  name  String
+  users User_Details[]
+}
+
+model OTP {
+  id         String       @id @default(cuid()) @map("_id") // Added cuid()
+  created_at DateTime     @db.Date
+  isValid    String
+  otp        String
+  updated_at DateTime     @db.Date
+  user_id    String
+  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id])
+}
+
+// ─── BILLING & SUBSCRIPTION MODELS ──────────────────────────────────────────
+
 model Subscription_Details {
-  id            String          @id @map("_id")
+  id            String          @id @default(cuid()) @map("_id") // Added cuid()
   duration      String
   name          String
   price         String
@@ -136,53 +157,43 @@ model Subscriptions {
   details           Subscription_Details @relation(fields: [sub_details_id], references: [id])
 
   @@index([user_id, sub_details_id])
+  @@index([created_at]) 
 }
 
-model User_Details {
-  id               String          @id @map("_id")
-  created_at       DateTime        @db.Date
-  device_id        String
-  msisdn           String
-  password         String
-  updated_at       DateTime        @db.Date
-  user_name        String
-  user_role        String
-  user_status      String
-  referral_code    String?
-  sales_manager_id String?
-  role             User_Role       @relation(fields: [user_role], references: [id])
-  status           User_Status     @relation(fields: [user_status], references: [id])
-  otps             OTP[]
-  receipts         Receipts[]
-  subscriptions    Subscriptions[]
-  managed_by       User_Details?   @relation("SalesManagerTeachers", fields: [sales_manager_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teachers         User_Details[]  @relation("SalesManagerTeachers")
+model Receipts {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  trans_id   String
+  amount     String
+  period     String
+  user_id    String
+  created_at DateTime     @db.Date
+  updated_at DateTime     @db.Date
+  user       User_Details @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([user_role, user_status, sales_manager_id])
+  @@index([user_id])
 }
 
-model User_Role {
-  id    String         @id @map("_id")
-  name  String
-  users User_Details[]
-}
-
-model User_Status {
-  id    String         @id @map("_id")
-  name  String
-  users User_Details[]
-}
+// ─── OPERATIONAL MODELS ─────────────────────────────────────────────────────
 
 model Deletion_Requests {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   msisdn       String
   user_name    String?
   requested_at DateTime  @default(now()) @db.Date
-  status       String    @default("pending") // pending, approved, rejected, processed
+  status       String    @default("pending") 
   processed_at DateTime? @db.Date
   notes        String?
 
   @@index([msisdn])
   @@index([status])
   @@index([requested_at])
+}
+
+model Sessions {
+  id         String   @id @default(cuid()) @map("_id") // Added cuid()
+  created_at DateTime @db.Date
+  device_id  String
+  is_valid   String
+  updated_at DateTime @db.Date
+  user_name  String
 }

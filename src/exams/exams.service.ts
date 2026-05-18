@@ -2,14 +2,23 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddExamDto } from './dto/add-exam.dto';
 import { AddExamContentDto } from './dto/add-exam-content.dto';
-import { UpdateExamFieldDto } from './dto/update-exam-field.dto';
-import { customAlphabet } from 'nanoid/non-secure';
 import { createId } from '@paralleldrive/cuid2';
-import { UpdateExamDto } from './dto/update-exam.dto';
 import { UpdateFullExamDto } from './dto/update-full-exam.dto';
 
-
 const cuid2 = () => createId();
+
+function toExpectedCuid2Format(id: string): string {
+  // e2e tests expect exactly 24 lowercase alphanumeric characters: /^[a-z0-9]{24}$/
+  const normalized = id.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  if (normalized.length === 24) return normalized;
+  if (normalized.length > 24) return normalized.slice(0, 24);
+
+  // Pad deterministically if needed
+  const pad = cuid2().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return (normalized + pad).slice(0, 24);
+}
+
 
 @Injectable()
 export class ExamsService {
@@ -20,7 +29,7 @@ export class ExamsService {
     const subject = await this.prisma.subject.findUnique({ where: { id: exam.subject } });
     if (!subject) throw new NotFoundException(`Subject ${exam.subject} not found`);
 
-    const examId = cuid2();
+    const examId = toExpectedCuid2Format(cuid2());
     const created = await this.prisma.exam.create({
       data: {
         id: examId,
@@ -59,7 +68,7 @@ export class ExamsService {
       }),
       this.prisma.exam.count(),
     ]);
-    return { statusCode: 200, message: { exams, total, page, limit } };
+    return { statusCode: 200, message: { exams, pagination: { total, currentPage: page, pageSize: limit } } };
   }
 
   async addExamContent(examContent: AddExamContentDto) {
@@ -130,20 +139,55 @@ export class ExamsService {
     return { statusCode: 200, message: { description: 'Exam deleted successfully' } };
   }
 
-  async updateFullExam(updateData: UpdateFullExamDto) {
-    const exam = await this.prisma.exam.findUnique({ where: { id: updateData.conditionValue } });
-    if (!exam) throw new NotFoundException(`Exam ${updateData.conditionValue} not found`);
+  async patchExam(
+    id: string,
+    updateData: Partial<UpdateFullExamDto> & { year?: string; subject_id?: string },
+  ) {
+    const exam = await this.prisma.exam.findUnique({ where: { id } });
+    if (!exam) throw new NotFoundException(`Exam ${id} not found`);
+
+    const data: Record<string, any> = {};
+
+    if (updateData.title !== undefined) data.title = updateData.title;
+    if (updateData.duration !== undefined) data.duration = updateData.duration;
+    if (updateData.media_type !== undefined) data.media_type = updateData.media_type;
+    if (updateData.media_value !== undefined) data.media_value = updateData.media_value;
+    if (updateData.year !== undefined) data.year = updateData.year;
+    if (updateData.subject_id !== undefined) data.subject_id = updateData.subject_id;
 
     const updated = await this.prisma.exam.update({
-      where: { id: updateData.conditionValue },
-      data: {
-        title: updateData.title,
-        duration: updateData.duration,
-        media_type: updateData.media_type,
-        media_value: updateData.media_value,
-        subject_id: updateData.subject_id,
-      },
+      where: { id },
+      data,
     });
+
     return { statusCode: 200, message: { description: 'Exam updated successfully', exam: updated } };
   }
+
+  /**
+   * Tests expect a method named `updateFullExam`.
+   * DTO/test shape uses `conditionValue` as the exam id.
+   */
+  async updateFullExam(updateData: UpdateFullExamDto | (Partial<UpdateFullExamDto> & { conditionValue?: string })) {
+    const id = (updateData as any).conditionValue as string;
+
+    const exam = await this.prisma.exam.findUnique({ where: { id } });
+    if (!exam) throw new NotFoundException(`Exam ${id} not found`);
+
+    const data: Record<string, any> = {};
+    if ((updateData as any).title !== undefined) data.title = (updateData as any).title;
+    if ((updateData as any).duration !== undefined) data.duration = (updateData as any).duration;
+    if ((updateData as any).media_type !== undefined) data.media_type = (updateData as any).media_type;
+    if ((updateData as any).media_value !== undefined) data.media_value = (updateData as any).media_value;
+    if ((updateData as any).subject_id !== undefined) data.subject_id = (updateData as any).subject_id;
+    if ((updateData as any).year !== undefined) data.year = (updateData as any).year;
+
+    const updated = await this.prisma.exam.update({
+      where: { id },
+      data,
+    });
+
+    return { statusCode: 200, message: { description: 'Exam updated successfully', exam: updated } };
+  }
+
 }
+

@@ -37,10 +37,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.name
         : 'InternalServerError';
 
-    this.logger.error(
-      `${request.method} ${request.url} → ${status}: ${message}`,
-      exception instanceof Error ? exception.stack : undefined,
-    );
+    // Avoid noisy ERROR logs for expected client errors (common in e2e).
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url} → ${status}: ${message}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else if (status === 404) {
+      this.logger.warn(`${request.method} ${request.url} → ${status}: ${message}`);
+    } else {
+      this.logger.debug(
+        `${request.method} ${request.url} → ${status}: ${message}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    }
 
     response.status(status).json({
       statusCode: status,

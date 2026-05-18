@@ -11,7 +11,7 @@ export class LoginDto {
   @ApiProperty({ example: '1234567890', description: 'User PIN' })
   @IsString()
   @IsNotEmpty()
-  @MinLength(10)
+  @MinLength(4)
   pin!: string;
 
   @ApiProperty({ example: 'device-uuid-abc123', description: 'Unique device identifier' })
